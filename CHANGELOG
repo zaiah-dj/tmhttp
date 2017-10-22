@@ -1,0 +1,9 @@
+Sat Feb 18 18:41:06 EST 2017
+	 -Now using new polymorph Table structure to hold HTTP data.
+
+Tue, Jan 31, 2017  4:08:18 PM
+	 -It does not work. sorry... :(
+
+Tue, Jan 31, 2017  4:08:01 PM
+	 -First commit of a simple http library.
+
