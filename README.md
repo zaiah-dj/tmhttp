@@ -23,7 +23,6 @@ To add HTTP capability to a program called megadeth comprised of a source file, 
 <pre>
 $ export CFLAGS=-Wall -Werror -Wno-unused -std=c99 -DSQROOGE_H
 $ gcc -o megadeth -std=c99 -Wall -Wno-error -Wno-unused -DSQROOGE megadeth.c single.c nw.c http.c
-$ ls *
 </pre>
 
 Finally, to simply build an object for your own programs 
