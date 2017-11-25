@@ -1,5 +1,5 @@
 #!/usr/bin/make
-NAME = http
+NAME = tmhttp
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/share/man
 DB=gdb
@@ -12,7 +12,7 @@ CC = clang
 #CC = gcc
 DFLAGS = -DHTTP_URL_MAX=100 -DHTTP_HEADER_MAX=10 -DHTTP_BODY_MAX=10 -DOBS_LOCAL_SQLITE3 -DSMPSRV_CLI_MODE
 COMPLAIN = -Wno-unused
-SRC = nw.c single.c http.c main.c 
+SRC = vendor/nw.c vendor/single.c http.c main.c 
 OBJ = ${SRC:.c=.o}
 IGNORE = archive/* vendor/*  
 ARCHIVEDIR = ..
@@ -37,11 +37,6 @@ build: $(OBJ) main.o
 #Run args always run this
 run:
 	@$(RUNARGS)
-
-#Objects
-.c.o:
-	@echo $(CC) -c $(CFLAGS) $<
-	@$(CC) -c $(CFLAGS) $<
 
 #Install (the newest version can be a symbolic link)
 install:
@@ -70,7 +65,7 @@ leak:
 
 #clean
 clean:
-	-@find . -maxdepth 1 -type f -iname "*.o" | xargs rm 
+	-@find . -maxdepth 2 -type f -iname "*.o" | xargs rm 
 	-@rm $(BIN)
 
 #clean

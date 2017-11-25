@@ -40,8 +40,18 @@ Less important:
  */
 #ifndef HTTP_H
 #define HTTP_H
-#include "single.h"
-#include "nw.h"
+
+#ifndef TMHTTP_SINGLE_PATH
+ #include "vendor/single.h"
+#else
+ #include TMHTTP_SINGLE_PATH
+#endif
+
+#ifndef TMHTTP_NW_PATH
+ #include "vendor/nw.h"
+#else
+ #include TMHTTP_NW_PATH
+#endif
 
 // Definable settings
 #ifndef HTTP_ERROR_BUFFER_LENGTH
