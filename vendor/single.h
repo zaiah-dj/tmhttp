@@ -105,53 +105,48 @@
 #ifndef ERR_H
  #if 1
   #define err(n, ...) (( fprintf(stderr, __VA_ARGS__) ? 0 : 0 ) || fprintf( stderr, "\n" ) ? n : n)
-  #define berr(n, c) fprintf(stderr, "%s: %d - %s\n", __FILE__, __LINE__, __errors[ c ] ) ? n : n
+  #define berr(n, c) fprintf(stderr, "%s\n", __errors[ c ] ) ? n : n
   #define perr(n, ...) ( fprintf(stderr, "%s: ", PROGRAM_NAME ) ? 0 : 0 ) || (( fprintf(stderr, __VA_ARGS__ ) ? 0 : 0 ) || fprintf( stderr, "\n" ) ? n : n )
  #else
-  #define err(n, ...) n
-  #define berr(n, ...) n
+  #define err(n, ...) 0
+  #define berr(n, ...) 0
   #define perr(n, c) fprintf(stderr, PROGRAM_NAME, fprintf(stderr, "%s\n", __errors[ c ] ) ? n : n
  #endif
 #endif
 
 #ifdef DEBUG_H
- #if 1
-	#define SUSP(...) \
-		fprintf( stderr, "%s, %d: ", __FILE__, __LINE__ ); fprintf( stderr, __VA_ARGS__ ); getchar() 
+ #define PATH( a ) \
+	 ( fprintf( #a ) ? 1 : 1 ) && a 
+ #define SUSP(...) \
+	fprintf( stderr, "%s, %d: ", __FILE__, __LINE__ ); fprintf( stderr, __VA_ARGS__ ); getchar() 
 
-  #define STEP(...) do { \
-   fprintf( stderr, "%20s [ %s: %d ]", __func__, __FILE__, __LINE__ ); \
-   getchar(); } while (0)
- #else
-  #define STEP(...) do { \
-   fprintf( stderr, __VA_ARGS__ ); getchar(); } while (0)
- #endif
+ #define STEP(...) do { \
+  fprintf( stderr, "%20s [ %s: %d ]", __func__, __FILE__, __LINE__ ); \
+  getchar(); } while (0)
 
- //A define to help dump data
  #define SHOWDATA(...) do { \
-  fprintf(stderr, "%-30s [ %s %d ] -> ", __func__, __FILE__, __LINE__); \
+  fprintf(stderr, "%-30s [ %s %d ] ( %s ) ", __func__, __FILE__, __LINE__, __CURRENT_TIME__ ); \
   fprintf( stderr, __VA_ARGS__ ); \
   fprintf( stderr, "\n"); } while (0)
 
- //Dump binary data
  #define SHOWBDATA(a,b, ...) do { \
-  fprintf(stderr, "%-30s [ %s %d ] -> ", __func__, __FILE__, __LINE__); \
+  fprintf(stderr, "%-30s [ %s %d ] ( %s ) ", __func__, __FILE__, __LINE__, __CURRENT_TIME__ ); \
   fprintf( stderr, __VA_ARGS__ ); \
 	write( 2, a, b ); \
   fprintf( stderr, "\n"); } while (0)
 
-
- //Encapsulate for testing
  #define ENCAPS( d, len ) \
   write( 2, "'", 1 ); \
   write( 2, d, len ); \
   write( 2, "'", 1 ); \
   write( 2, "\n", 1 )
-
 #else
- #define SHOWDATA(...)
- #define SHOWBDATA(a,b, ...)
- #define ENCAPS( d, len )
+  #define PATH( a )
+	#define SUSP(...)
+  #define STEP(...) 
+  #define SHOWDATA(...)
+	#define SHOWBDATA(a,b, ...) 
+	#define ENCAPS( d, len )
 #endif
 
 
@@ -309,8 +304,6 @@
  	lt_items_i(t, (uint8_t*)str, strlen((char *)str))
  #define lt_iitems(t, ind) \
  	lt_items_by_index(t, ind )
- #define lt_countall( t ) \
- 	lt_counti( t, 0 );
  #define lt_within( t, str ) \
  	lt_within_long( t, (uint8_t *)str, strlen(str))
 #endif
@@ -353,7 +346,11 @@
 #endif
 
 #ifndef SQROOGE_H
- #include "vendor/sqlite3.h"
+ #ifndef SQLITE3_PATH
+  #include "sqlite3.h"
+ #else
+  #include SQLITE3_PATH
+ #endif
  
  /*This is because C sucks... :) (sometimes) */
  #define init_buf(dest, src, len) \
@@ -371,6 +368,63 @@
 
 #ifndef TIMER_H
  #include <time.h>
+
+ #define __CURRENT_TIME__ \
+	timer_now( &__thx__ )	
+
+ #define timer_init(a, b) \
+  __timer_init( a, b )
+
+ #define timer_use_us(a) \
+  __timer_init( a, LITE_USEC )
+
+ #define timer_use_ms(a) \
+  __timer_init( a, LITE_MSEC )
+
+ #define timer_use_secs(a) \
+  __timer_init( a, LITE_SEC )
+
+ #define timer_use_ns(a) \
+  __timer_init( a, LITE_NSEC )
+
+ #define timer_set_name(...) \
+	__timer_set_name( __VA_ARGS__ )
+
+ #define timer_elapsed(a) \
+	__timer_elap( a ) 
+
+ #define timer_selapsed() \
+	__timer_elap( &__thx__ )
+
+ #define timer_sprint( ) \
+	__timer_eprint( &__thx__ )
+
+ #define timer_sset_name( str ) \
+	__timer_set_name( &__thx__, str )
+
+ #define timer_print(a) \
+	__timer_eprint( a )
+
+ #ifdef DEBUG_H
+  #define timer_sstart( ) \
+	 __timer_start( &__thx__, __FILE__, __LINE__ )
+  #define timer_send( ) \
+	 __timer_end( &__thx__, __FILE__, __LINE__ )
+  #define timer_start( t ) \
+   __timer_start( t, __FILE__, __LINE__ )
+  #define timer_end( t ) \
+   __timer_end( t, __FILE__, __LINE__ )
+ #else
+  #define timer_sstart( ) \
+	 __timer_start( &__thx__ )
+  #define timer_send( ) \
+	 __timer_end( &__thx__ )
+  #define timer_start( t ) \
+   __timer_start( t )
+  #define timer_end( t ) \
+   __timer_end( t )
+ #endif
+
 #endif
 
 #ifndef MEM_H
@@ -382,8 +436,6 @@
 	memset(&mems, 0, sizeof(Mem)); \
 	mems.pos = p; \
 	mems.it = m; 
-
-
 #endif
 
 #ifndef JSON_H
@@ -683,9 +735,9 @@ typedef struct
   	   prev,       //previous match
   	   next;       //next match
   struct words { 
-       char *word,       //Find this
-             *catch,      //If you found *word, skip all other characters until you find this 
-                *negate;     //If you found *word, skip *catch until you find this
+	char *word,       //Find this
+       *catch,      //If you found *word, skip all other characters until you find this 
+       *negate;     //If you found *word, skip *catch until you find this
   }              words[31];
 } Parser;
 
@@ -699,6 +751,8 @@ typedef struct LiteTable LiteTable;
 typedef struct LiteKv LiteKv;
 typedef union  LiteRecord LiteRecord;
 //typedef struct LiteNode LiteNode;
+
+
 //Table for table values
 typedef enum 
 {
@@ -714,6 +768,7 @@ typedef enum
   LITE_NOD,     //A node
 } LiteType;
 
+
 struct LiteTable 
 {
   uint32_t  count;
@@ -721,26 +776,26 @@ struct LiteTable
   LiteTable *parent;
 };
 
-//
+
 typedef struct 
 {
-  unsigned int  total  ,   //Size allocated (the bound)
-                modulo ,   //Optimal modulus value for hashing
-                index  ,   //Index to current element
-                count  ,   //Elements in table
-                *rCount;   //Elements in current table 
-  int           error  ;   //An error occurred, read it...
-  int           mallocd;   //An error occurred, read it...
-  int           srcmallocd;   //An error occurred, read it...
-  int           size   ;   //Size of newly trimmed key or pointer
-  int           cptr;    //Table will stop here
-  int           start  ,   //Table bounds are here if "lt_within" is used
+  unsigned int  total  ,     //Size allocated (the bound)
+                modulo ,     //Optimal modulus value for hashing
+                index  ,     //Index to current element
+                count  ,     //Elements in table
+                *rCount;     //Elements in current table 
+  int           error  ;     //An error occurred, read it...
+  int           mallocd;     //An error occurred, read it...
+  int           srcmallocd;  //An error occurred, read it...
+  int           size   ;     //Size of newly trimmed key or pointer
+  int           cptr;        //Table will stop here
+  int           start  ,     //Table bounds are here if "lt_within" is used
                 end    ,
                 buflen ;
-  unsigned char *src   ;   //Source for when you need it
-  unsigned char *buf   ;   //Pointer for trimmed keys and values
-  LiteKv        *head  ;   //Pointer to the first element
-  LiteTable     *current;   //Pointer to the first element
+  unsigned char *src   ;     //Source for when you need it
+  unsigned char *buf   ;     //Pointer for trimmed keys and values
+  LiteKv        *head  ;     //Pointer to the first element
+  LiteTable     *current;    //Pointer to the first element
   
 } Table;
 
@@ -812,7 +867,7 @@ struct Option
 
 
 #ifndef RENDER_H
-enum 
+enum
 { /*...*/
 	RAW = 0,
 	NEGLOOP,
@@ -821,6 +876,7 @@ enum
 	STUB,
 	DIRECT
 };
+
 
 typedef struct
 { 
@@ -971,16 +1027,17 @@ typedef enum
 typedef struct 
 {	
 	clockid_t   clockid;     
-	int         linestart,   
-              lineend;	  
 	struct 
   timespec    start,     
               end;      
 	const char *label; 
- #ifdef CV_VERBOSE_TIMER 
+ #ifdef DEBUG_H 
   const char *file;        
+	int         linestart,   
+              lineend;	  
  #endif
 	LiteTimetype  type;     
+	char        ts_string[1024];
 } Timer;
 #endif
 
@@ -1221,6 +1278,7 @@ int lt_count_elements ( Table *t, int index );
 //Table *lt_copy (Table *t, int from, int to); 
 int lt_exists (Table *t, int index);
 int lt_counti ( Table *t, int index );
+int lt_countall ( Table *t );
 //Table *lt_within_long ( Table *t, uint8_t *src, int len );
 Table *lt_within_long( Table *st, uint8_t *src, int len );
 const char *lt_typename (int type);
@@ -1238,6 +1296,7 @@ void render_free ( Render *r );
 void render_set_srcdata (Render *r, uint8_t *src);
 void render_set_srctable (Render *r, Table *t);
 int render_map ( Render *r, uint8_t *src, int srclen );
+void render_dump_mark ( Render *r );
 Buffer *render_rendered (Render *r);
 #endif
 
@@ -1271,6 +1330,25 @@ const char *sq_strerror ( Database * );
  #ifdef SQROOGE_EXPERIMENTAL
   _Bool sq_read (Database *, const char *sql);
   _Bool sq_create (Database *, const char *);
+ #endif
+#endif
+
+#ifndef TIMER_H
+void __timer_init (Timer *t, LiteTimetype type);
+void __timer_set_name (Timer *t, const char *label);
+int __timer_elap (Timer *t) ;
+void __timer_eprint (Timer *t) ;
+char *timer_now( Timer *t );
+#ifndef TIMER_LOCAL_STRUCT_H
+#define TIMER_LOCAL_STRUCT_H
+static Timer __thx__ = { 0 };
+#endif
+ #ifdef DEBUG_H
+ void __timer_start (Timer *t, const char *file, int line);
+ void __timer_end (Timer *t, const char *file, int line);
+ #else
+ void __timer_start (Timer *t);
+ void __timer_end (Timer *t);
  #endif
 #endif
 

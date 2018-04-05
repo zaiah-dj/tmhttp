@@ -8,8 +8,8 @@ LC=valgrind
 LCFLAGS=--leak-check=full --log-fd=3
 CFLAGS = -g -Wall -Werror -Wno-unused -std=c99 -fsanitize=address -fsanitize-undefined-trap-on-error -DSQROOGE_H
 CC = clang
-#CFLAGS = -g -Wall -Werror $(COMPLAIN) -Wstrict-overflow -ansi -std=c99 -Wno-deprecated-declarations -O0 -pedantic-errors $(LDDIRS) $(LDFLAGS) $(DFLAGS)
-#CC = gcc
+CFLAGS = -g -Wall -Werror $(COMPLAIN) -Wstrict-overflow -ansi -std=c99 -Wno-deprecated-declarations -O0 -pedantic-errors $(LDDIRS) $(LDFLAGS) $(DFLAGS) -DSQROOGE_H
+CC = gcc
 DFLAGS = -DHTTP_URL_MAX=100 -DHTTP_HEADER_MAX=10 -DHTTP_BODY_MAX=10 -DOBS_LOCAL_SQLITE3 -DSMPSRV_CLI_MODE
 COMPLAIN = -Wno-unused
 SRC = vendor/nw.c vendor/single.c http.c main.c 
